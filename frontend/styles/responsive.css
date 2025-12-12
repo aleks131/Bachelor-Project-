@@ -1,0 +1,118 @@
+@media screen and (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .header-left, .header-right {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .header-right {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .apps-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .app-card {
+        min-height: 200px;
+    }
+    
+    .premium-title {
+        font-size: 1.5rem !important;
+    }
+    
+    .premium-button {
+        padding: 14px 24px;
+        font-size: 1rem;
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .logout-button {
+        width: 100%;
+        padding: 12px 24px !important;
+    }
+    
+    .user-info {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .theme-toggle-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .dashboard-container {
+        padding: 0;
+    }
+    
+    .dashboard-header {
+        padding: 0.75rem;
+    }
+    
+    .premium-title {
+        font-size: 1.25rem !important;
+    }
+    
+    .app-card {
+        padding: 1.5rem;
+    }
+    
+    .premium-button {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .apps-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-theme="auto"] {
+        color-scheme: dark;
+    }
+}
+
+@media print {
+    .dashboard-header,
+    .theme-toggle-btn,
+    .logout-button {
+        display: none;
+    }
+    
+    .apps-grid {
+        display: block;
+    }
+    
+    .app-card {
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+}
+

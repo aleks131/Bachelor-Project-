@@ -1,0 +1,54 @@
+{
+  "name": "Smart Solutions by TripleA",
+  "short_name": "Smart Solutions",
+  "description": "Enterprise unified application platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1d29",
+  "theme_color": "#667eea",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/assets/triple-a-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/triple-a-logo.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/assets/triple-a-logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open main dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/assets/triple-a-logo.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Daily Plan",
+      "short_name": "Daily Plan",
+      "description": "View daily plan",
+      "url": "/app/daily-plan",
+      "icons": [{ "src": "/assets/triple-a-logo.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Image Gallery",
+      "short_name": "Gallery",
+      "description": "Browse images",
+      "url": "/app/gallery",
+      "icons": [{ "src": "/assets/triple-a-logo.svg", "sizes": "96x96" }]
+    }
+  ]
+}
+

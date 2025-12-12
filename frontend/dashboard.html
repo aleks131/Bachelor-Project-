@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Smart Solutions by TripleA - Enterprise unified application platform">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Smart Solutions">
     <title>Smart Solutions - Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/premium-theme.css">
     <link rel="stylesheet" href="styles/premium-ui.css">
@@ -23,12 +29,13 @@
     <link rel="stylesheet" href="styles/theme-toggle.css">
     <link rel="stylesheet" href="styles/ui-fixes.css">
     <link rel="stylesheet" href="styles/ui-enhancements.css">
+    <link rel="stylesheet" href="styles/responsive.css">
 </head>
 <body>
     <div class="dashboard-container">
         <header class="dashboard-header">
             <div class="header-left">
-                <img src="assets/salling.png" alt="TripleA Logo" class="logo">
+                <img src="assets/triple-a-logo.svg" alt="TripleA Logo" class="logo" aria-hidden="true">
                 <div class="header-title-group">
                     <h1 class="premium-title" style="font-size: 2rem; margin: 0;">Smart Solutions</h1>
                     <span class="premium-subtitle-small">by TripleA</span>
@@ -36,9 +43,9 @@
             </div>
             <div class="header-right">
                 <span class="user-info" id="userInfo"></span>
-                <button class="logout-button" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
+                <button class="logout-button" id="logoutBtn" aria-label="Logout">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    <span>Logout</span>
                 </button>
             </div>
         </header>
@@ -67,6 +74,7 @@
     <script src="scripts/virtual-scroll.js"></script>
     <script src="scripts/ai-features.js"></script>
     <script src="scripts/ai-ui.js"></script>
+    <script src="scripts/pwa.js"></script>
     
     <!-- Global Search Component -->
     <div include-html="components/global-search.html"></div>

@@ -3,6 +3,7 @@ const http = require('http');
 const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
+const compression = require('compression');
 const fs = require('fs');
 const WebSocket = require('ws');
 const config = require('../data/config.json');
@@ -16,13 +17,66 @@ const app = express();
 const server = http.createServer(app);
 const PORT = config.server.port || 3000;
 
+app.use(compression());
+
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    next();
+});
+
+const rateLimitMap = new Map();
+
+const rateLimit = (maxRequests = 100, windowMs = 60000) => {
+    return (req, res, next) => {
+        const key = req.ip || req.connection.remoteAddress;
+        const now = Date.now();
+        
+        if (!rateLimitMap.has(key)) {
+            rateLimitMap.set(key, { count: 1, resetTime: now + windowMs });
+            return next();
+        }
+        
+        const record = rateLimitMap.get(key);
+        
+        if (now > record.resetTime) {
+            record.count = 1;
+            record.resetTime = now + windowMs;
+            return next();
+        }
+        
+        if (record.count >= maxRequests) {
+            return res.status(429).json({ error: 'Too many requests, please try again later' });
+        }
+        
+        record.count++;
+        next();
+    };
+};
+
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, record] of rateLimitMap.entries()) {
+        if (now > record.resetTime) {
+            rateLimitMap.delete(key);
+        }
+    }
+}, 60000);
+
+app.use('/api/', rateLimit(100, 60000));
+app.use('/api/login', rateLimit(5, 60000));
+app.use('/api/upload', rateLimit(20, 60000));
+
 app.use(cors({
     origin: true,
     credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(session({
     secret: config.server.sessionSecret,
@@ -31,7 +85,8 @@ app.use(session({
     cookie: {
         secure: false,
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: 'lax'
     }
 }));
 
@@ -59,18 +114,32 @@ const requireAuth = (req, res, next) => {
 };
 
 app.use(express.static(path.join(__dirname, '../frontend'), {
+    maxAge: '1d',
+    etag: true,
+    lastModified: true,
     setHeaders: (res, filePath) => {
         if (filePath.endsWith('.css')) {
             res.setHeader('Content-Type', 'text/css');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
         } else if (filePath.endsWith('.js')) {
             res.setHeader('Content-Type', 'application/javascript');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+        } else if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache');
+        } else if (filePath.endsWith('.svg') || filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000');
         }
     }
 }));
 
-// Serve cached images and thumbnails
-app.use('/data/image-cache', express.static(path.join(__dirname, '../data/image-cache')));
-app.use('/data/thumbnails', express.static(path.join(__dirname, '../data/thumbnails')));
+app.use('/data/image-cache', express.static(path.join(__dirname, '../data/image-cache'), {
+    maxAge: '7d',
+    etag: true
+}));
+app.use('/data/thumbnails', express.static(path.join(__dirname, '../data/thumbnails'), {
+    maxAge: '7d',
+    etag: true
+}));
 
 app.get('/', (req, res) => {
     if (req.session && req.session.userId) {
@@ -85,6 +154,14 @@ app.post('/api/login', async (req, res) => {
         
         if (!username || !password) {
             return res.status(400).json({ error: 'Username and password are required' });
+        }
+        
+        if (typeof username !== 'string' || typeof password !== 'string') {
+            return res.status(400).json({ error: 'Invalid input format' });
+        }
+        
+        if (username.length > 50 || password.length > 200) {
+            return res.status(400).json({ error: 'Input too long' });
         }
         
         const result = await auth.authenticateUser(username, password);
@@ -492,7 +569,6 @@ setInterval(() => {
     });
 }, 5000);
 
-// Serve 404 page for unknown routes
 app.use((req, res) => {
     if (req.accepts('html')) {
         res.status(404).sendFile(path.join(__dirname, '../frontend/404.html'));
