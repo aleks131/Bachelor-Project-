@@ -181,7 +181,7 @@ window.notificationSystem = notificationSystem;
 // Show welcome notification (optional, can be disabled)
 if (Notification.permission === 'granted') {
     // Only show if user explicitly granted permission
-    // notificationSystem.showNotification('Salling App Ready', {
+    // notificationSystem.showNotification('Smart Solutions Ready', {
     //     body: 'Notifications are enabled',
     //     type: 'info'
     // });
