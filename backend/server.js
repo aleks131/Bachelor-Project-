@@ -141,6 +141,11 @@ app.use('/data/thumbnails', express.static(path.join(__dirname, '../data/thumbna
     etag: true
 }));
 
+app.use('/mockups', express.static(path.join(__dirname, '../mockups'), {
+    maxAge: '1y',
+    etag: true
+}));
+
 app.get('/', (req, res) => {
     if (req.session && req.session.userId) {
         return res.redirect('/dashboard');

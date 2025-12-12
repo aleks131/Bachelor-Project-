@@ -49,6 +49,9 @@ function renderApps() {
     if (currentUser.role === 'admin') {
         appsGrid.innerHTML += `
             <div class="app-card premium-card admin-card" onclick="window.location.href='/admin'">
+                <div style="margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+                    <img src="/mockups/admin-panel.png" alt="Admin Panel" style="width: 100%; height: auto; display: block;" onerror="this.style.display='none'">
+                </div>
                 <div class="app-icon premium-icon-large admin-icon">
                     <i class="fas fa-cog"></i>
                 </div>
@@ -61,6 +64,20 @@ function renderApps() {
             </div>
         `;
     }
+    
+    appsGrid.innerHTML += `
+        <div class="app-card premium-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer;" onclick="window.location.href='/mockups-showcase'">
+            <div class="app-icon premium-icon-large" style="color: white;">
+                <i class="fas fa-images"></i>
+            </div>
+            <h3 class="premium-section-title" style="font-size: 2rem; margin-bottom: 1rem; color: white;">Software Showcase</h3>
+            <p style="font-size: 1.125rem; color: rgba(255,255,255,0.9); margin-bottom: 2rem; line-height: 1.6;">View all mockup images showing software functionality</p>
+            <button class="premium-button" style="background: white; color: #667eea;" onclick="window.location.href='/mockups-showcase'; event.stopPropagation();">
+                <i class="fas fa-eye"></i>
+                <span>View Showcase</span>
+            </button>
+        </div>
+    `;
     
     const { apps } = appConfig;
     const allowedApps = currentUser.allowedApps || [];
@@ -79,9 +96,19 @@ function renderApps() {
         const app = apps[appKey];
         const isRecent = appKey === lastUsedApp;
         
+        const mockupMap = {
+            'daily-plan': 'daily-plan-viewer.png',
+            'gallery': 'image-gallery.png',
+            'dashboard': 'performance-dashboard.png'
+        };
+        const mockupImage = mockupMap[appKey] ? `/mockups/${mockupMap[appKey]}` : '';
+        
         const appCard = document.createElement('div');
         appCard.className = `app-card premium-card ${isRecent ? 'recent' : ''}`;
         appCard.innerHTML = `
+            ${mockupImage ? `<div style="margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+                <img src="${mockupImage}" alt="${app.name}" style="width: 100%; height: auto; display: block;" onerror="this.style.display='none'">
+            </div>` : ''}
             <span class="app-icon premium-icon-large">${app.icon}</span>
             <h2 class="app-name premium-section-title" style="font-size: 2rem; margin-bottom: 1rem;">${app.name}</h2>
             <p class="app-description" style="font-size: 1.125rem; color: #6c757d; margin-bottom: 2rem; line-height: 1.6;">${app.description}</p>

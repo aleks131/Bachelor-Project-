@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Showcase - Smart Solutions by TripleA</title>
+    <link rel="icon" type="image/svg+xml" href="assets/triple-a-logo.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/premium-theme.css">
+    <link rel="stylesheet" href="styles/premium-ui.css">
+    <link rel="stylesheet" href="styles/ui-enhancements.css">
+    <link rel="stylesheet" href="styles/branding-overrides.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <style>
+        .showcase-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+        .showcase-header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+        .showcase-header h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .showcase-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .mockups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        .mockup-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mockup-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+        }
+        .mockup-card h2 {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .mockup-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .mockup-image {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+        .mockup-image:hover {
+            transform: scale(1.02);
+        }
+        .back-button {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .back-button:hover {
+            background: white;
+            transform: translateX(-5px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+        }
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .features-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+        }
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/dashboard" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+    
+    <div class="showcase-container">
+        <div class="showcase-header">
+            <h1>Smart Solutions by TripleA</h1>
+            <p>Software Functionality Showcase</p>
+        </div>
+        
+        <div class="mockups-grid">
+            <!-- Login Screen -->
+            <div class="mockup-card">
+                <h2><i class="fas fa-sign-in-alt"></i> Login Screen</h2>
+                <p>Secure authentication interface with TripleA branding and modern design.</p>
+                <ul class="features-list">
+                    <li>Session-based authentication</li>
+                    <li>JWT token support</li>
+                    <li>Role-based access control</li>
+                    <li>Remember me functionality</li>
+                </ul>
+                <img src="/mockups/login-screen.png" alt="Login Screen" class="mockup-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22600%22 height=%22400%22%3E%3Crect fill=%22%23667eea%22 width=%22600%22 height=%22400%22/%3E%3Ctext x=%22300%22 y=%22200%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22white%22 text-anchor=%22middle%22%3ELogin Screen%3C/text%3E%3C/svg%3E'">
+            </div>
+            
+            <!-- Dashboard -->
+            <div class="mockup-card">
+                <h2><i class="fas fa-th-large"></i> Main Dashboard</h2>
+                <p>Central hub for accessing all applications with intuitive card-based navigation.</p>
+                <ul class="features-list">
+                    <li>Application cards with hover effects</li>
+                    <li>Global search functionality</li>
+                    <li>User info display</li>
+                    <li>Quick access to all apps</li>
+                </ul>
+                <img src="/mockups/dashboard.png" alt="Dashboard" class="mockup-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22600%22 height=%22400%22%3E%3Crect fill=%22%23667eea%22 width=%22600%22 height=%22400%22/%3E%3Ctext x=%22300%22 y=%22200%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22white%22 text-anchor=%22middle%22%3EDashboard%3C/text%3E%3C/svg%3E'">
+            </div>
+            
+            <!-- Daily Plan Viewer -->
+            <div class="mockup-card">
+                <h2><i class="fas fa-calendar-day"></i> Daily Plan Viewer</h2>
+                <p>Time-based schedule management with automatic shift detection and real-time updates.</p>
+                <ul class="features-list">
+                    <li>Morning/Evening/Night schedules</li>
+                    <li>Automatic time-based display</li>
+                    <li>Real-time file updates</li>
+                    <li>Fullscreen mode</li>
+                </ul>
+                <img src="/mockups/daily-plan-viewer.png" alt="Daily Plan Viewer" class="mockup-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22600%22 height=%22400%22%3E%3Crect fill=%22%23667eea%22 width=%22600%22 height=%22400%22/%3E%3Ctext x=%22300%22 y=%22200%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22white%22 text-anchor=%22middle%22%3EDaily Plan Viewer%3C/text%3E%3C/svg%3E'">
+            </div>
+            
+            <!-- Image Gallery -->
+            <div class="mockup-card">
+                <h2><i class="fas fa-images"></i> Image Gallery</h2>
+                <p>Advanced image browsing with multiple viewing modes and AI-powered features.</p>
+                <ul class="features-list">
+                    <li>Browse, Slideshow, Meeting modes</li>
+                    <li>Advanced image viewer (zoom, pan, rotate)</li>
+                    <li>AI features (OCR, color analysis)</li>
+                    <li>File management (upload, delete, organize)</li>
+                </ul>
+                <img src="/mockups/image-gallery.png" alt="Image Gallery" class="mockup-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22600%22 height=%22400%22%3E%3Crect fill=%22%23667eea%22 width=%22600%22 height=%22400%22/%3E%3Ctext x=%22300%22 y=%22200%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22white%22 text-anchor=%22middle%22%3EImage Gallery%3C/text%3E%3C/svg%3E'">
+            </div>
+            
+            <!-- Performance Dashboard -->
+            <div class="mockup-card">
+                <h2><i class="fas fa-chart-line"></i> Performance Dashboard</h2>
+                <p>KPI tracking and visualization with drag-and-drop customization and meeting mode.</p>
+                <ul class="features-list">
+                    <li>Customizable KPI cards</li>
+                    <li>Drag & drop layout</li>
+                    <li>Image assignment to KPIs</li>
+                    <li>Meeting mode for presentations</li>
+                </ul>
+                <img src="/mockups/performance-dashboard.png" alt="Performance Dashboard" class="mockup-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22600%22 height=%22400%22%3E%3Crect fill=%22%23667eea%22 width=%22600%22 height=%22400%22/%3E%3Ctext x=%22300%22 y=%22200%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22white%22 text-anchor=%22middle%22%3EPerformance Dashboard%3C/text%3E%3C/svg%3E'">
+            </div>
+            
+            <!-- Admin Panel -->
+            <div class="mockup-card">
+                <h2><i class="fas fa-cog"></i> Admin Panel</h2>
+                <p>Complete system management with user administration, settings, and monitoring.</p>
+                <ul class="features-list">
+                    <li>User management (create, edit, delete)</li>
+                    <li>System settings configuration</li>
+                    <li>Layout builder</li>
+                    <li>Monitoring dashboard</li>
+                    <li>Backup & restore</li>
+                </ul>
+                <img src="/mockups/admin-panel.png" alt="Admin Panel" class="mockup-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22600%22 height=%22400%22%3E%3Crect fill=%22%23667eea%22 width=%22600%22 height=%22400%22/%3E%3Ctext x=%22300%22 y=%22200%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22white%22 text-anchor=%22middle%22%3EAdmin Panel%3C/text%3E%3C/svg%3E'">
+            </div>
+        </div>
+    </div>
+    
+    <script src="scripts/theme-manager.js"></script>
+</body>
+</html>
+
