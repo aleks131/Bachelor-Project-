@@ -436,45 +436,72 @@ function setupWatchers() {
         
         const userId = user.id.toString();
         
-        if (user.allowedApps.includes('daily-plan')) {
-            let dailyPlanPath;
-            if (user.networkPaths.dailyPlan) {
-                dailyPlanPath = path.normalize(user.networkPaths.dailyPlan);
-            } else if (user.networkPaths.main) {
-                dailyPlanPath = path.normalize(user.networkPaths.main);
-            } else {
-                dailyPlanPath = path.join(__dirname, '../../images');
+        try {
+            if (user.allowedApps.includes('daily-plan')) {
+                let dailyPlanPath;
+                if (user.networkPaths.dailyPlan) {
+                    dailyPlanPath = path.normalize(user.networkPaths.dailyPlan);
+                } else if (user.networkPaths.main) {
+                    dailyPlanPath = path.normalize(user.networkPaths.main);
+                } else {
+                    dailyPlanPath = path.join(__dirname, '../../images');
+                }
+                
+                if (dailyPlanPath && fs.existsSync(dailyPlanPath)) {
+                    if (!watchers.has(`${userId}-daily-plan`)) {
+                        try {
+                            const watcher = dailyPlanRoutes.setupDailyPlanWatcher(dailyPlanPath, wss);
+                            watchers.set(`${userId}-daily-plan`, watcher);
+                            logger.info(`Daily plan watcher set up for user ${user.username}`, { path: dailyPlanPath });
+                        } catch (err) {
+                            logger.error('Failed to setup daily plan watcher', err, { userId, path: dailyPlanPath });
+                        }
+                    }
+                } else {
+                    logger.warn(`Daily plan path does not exist, skipping watcher`, { userId, path: dailyPlanPath });
+                }
             }
             
-            if (!watchers.has(`${userId}-daily-plan`)) {
-                const watcher = dailyPlanRoutes.setupDailyPlanWatcher(dailyPlanPath, wss);
-                watchers.set(`${userId}-daily-plan`, watcher);
-            }
-        }
-        
-        if (user.allowedApps.includes('gallery')) {
-            let galleryPath;
-            if (user.networkPaths.gallery) {
-                galleryPath = path.normalize(user.networkPaths.gallery);
-            } else if (user.networkPaths.main) {
-                galleryPath = path.normalize(user.networkPaths.main);
+            if (user.allowedApps.includes('gallery')) {
+                let galleryPath;
+                if (user.networkPaths.gallery) {
+                    galleryPath = path.normalize(user.networkPaths.gallery);
+                } else if (user.networkPaths.main) {
+                    galleryPath = path.normalize(user.networkPaths.main);
+                }
+                
+                if (galleryPath && fs.existsSync(galleryPath) && !watchers.has(`${userId}-gallery`)) {
+                    try {
+                        const watcher = galleryRoutes.setupGalleryWatcher(galleryPath, wss);
+                        watchers.set(`${userId}-gallery`, watcher);
+                        logger.info(`Gallery watcher set up for user ${user.username}`, { path: galleryPath });
+                    } catch (err) {
+                        logger.error('Failed to setup gallery watcher', err, { userId, path: galleryPath });
+                    }
+                } else if (galleryPath && !fs.existsSync(galleryPath)) {
+                    logger.warn(`Gallery path does not exist, skipping watcher`, { userId, path: galleryPath });
+                }
             }
             
-            if (galleryPath && !watchers.has(`${userId}-gallery`)) {
-                const watcher = galleryRoutes.setupGalleryWatcher(galleryPath, wss);
-                watchers.set(`${userId}-gallery`, watcher);
+            if (user.allowedApps.includes('dashboard')) {
+                const mainPath = user.networkPaths.main ? path.normalize(user.networkPaths.main) : null;
+                const extraPath = user.networkPaths.extra ? path.normalize(user.networkPaths.extra) : null;
+                const kpiPath = user.networkPaths.kpi ? path.normalize(user.networkPaths.kpi) : null;
+                
+                if (mainPath && fs.existsSync(mainPath) && !watchers.has(`${userId}-dashboard`)) {
+                    try {
+                        const watcher = dashboardRoutes.setupDashboardWatcher(mainPath, extraPath, kpiPath, wss);
+                        watchers.set(`${userId}-dashboard`, watcher);
+                        logger.info(`Dashboard watcher set up for user ${user.username}`, { path: mainPath });
+                    } catch (err) {
+                        logger.error('Failed to setup dashboard watcher', err, { userId, path: mainPath });
+                    }
+                } else if (mainPath && !fs.existsSync(mainPath)) {
+                    logger.warn(`Dashboard path does not exist, skipping watcher`, { userId, path: mainPath });
+                }
             }
-        }
-        
-        if (user.allowedApps.includes('dashboard')) {
-            const mainPath = user.networkPaths.main ? path.normalize(user.networkPaths.main) : null;
-            const extraPath = user.networkPaths.extra ? path.normalize(user.networkPaths.extra) : null;
-            const kpiPath = user.networkPaths.kpi ? path.normalize(user.networkPaths.kpi) : null;
-            
-            if (mainPath && !watchers.has(`${userId}-dashboard`)) {
-                const watcher = dashboardRoutes.setupDashboardWatcher(mainPath, extraPath, kpiPath, wss);
-                watchers.set(`${userId}-dashboard`, watcher);
-            }
+        } catch (err) {
+            logger.error('Error setting up watchers for user', err, { userId, username: user.username });
         }
     });
 }
