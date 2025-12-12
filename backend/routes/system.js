@@ -1,194 +1,84 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
-const os = require('os');
-const auth = require('../auth');
-const logger = require('../utils/logger');
-const validator = require('../utils/validator');
 
-const requireAdmin = (req, res, next) => {
-    if (req.session && req.session.userId) {
-        const user = auth.getUserById(req.session.userId);
-        if (user && user.role === 'admin') {
-            req.user = user;
-            return next();
-        }
-    }
-    res.status(403).json({ error: 'Admin access required' });
-};
-
-router.get('/diagnostics', requireAdmin, (req, res) => {
+router.post('/log-error', async (req, res) => {
     try {
-        const diagnostics = {
-            timestamp: new Date().toISOString(),
-            system: {
-                platform: os.platform(),
-                arch: os.arch(),
-                nodeVersion: process.version,
-                uptime: process.uptime(),
-                memory: process.memoryUsage(),
-                cpu: os.cpus().length
-            },
-            application: {
-                version: '2.0.0',
-                dataDir: path.join(__dirname, '../../data'),
-                logDir: path.join(__dirname, '../../data/logs')
-            },
-            checks: []
-        };
+        const errorInfo = req.body;
+        const logDir = path.join(__dirname, '../../data/logs');
         
-        const dataDir = path.join(__dirname, '../../data');
-        diagnostics.checks.push({
-            name: 'Data Directory',
-            status: fs.existsSync(dataDir) ? 'ok' : 'error',
-            message: fs.existsSync(dataDir) ? 'Exists' : 'Missing'
-        });
+        await fs.mkdir(logDir, { recursive: true });
         
-        const usersFile = path.join(dataDir, 'users.json');
-        diagnostics.checks.push({
-            name: 'Users File',
-            status: fs.existsSync(usersFile) ? 'ok' : 'warning',
-            message: fs.existsSync(usersFile) ? 'Exists' : 'Missing'
-        });
+        const logFile = path.join(logDir, `errors-${new Date().toISOString().split('T')[0]}.log`);
+        const logEntry = `[${new Date().toISOString()}] ${JSON.stringify(errorInfo)}\n`;
         
-        const configFile = path.join(dataDir, 'config.json');
-        diagnostics.checks.push({
-            name: 'Config File',
-            status: fs.existsSync(configFile) ? 'ok' : 'error',
-            message: fs.existsSync(configFile) ? 'Exists' : 'Missing'
-        });
+        await fs.appendFile(logFile, logEntry);
         
-        const logsDir = path.join(dataDir, 'logs');
-        diagnostics.checks.push({
-            name: 'Logs Directory',
-            status: fs.existsSync(logsDir) ? 'ok' : 'warning',
-            message: fs.existsSync(logsDir) ? 'Exists' : 'Missing'
-        });
-        
-        const backupsDir = path.join(dataDir, 'backups');
-        diagnostics.checks.push({
-            name: 'Backups Directory',
-            status: fs.existsSync(backupsDir) ? 'ok' : 'warning',
-            message: fs.existsSync(backupsDir) ? 'Exists' : 'Missing'
-        });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error logging error:', error);
+        res.status(500).json({ error: 'Failed to log error' });
+    }
+});
+
+router.get('/user-activity', async (req, res) => {
+    try {
+        const analyticsFile = path.join(__dirname, '../../data/analytics.json');
+        let analytics = {};
         
         try {
-            const users = auth.getAllUsers();
-            diagnostics.checks.push({
-                name: 'User Data',
-                status: users.length > 0 ? 'ok' : 'warning',
-                message: `${users.length} users found`
-            });
-        } catch (error) {
-            diagnostics.checks.push({
-                name: 'User Data',
-                status: 'error',
-                message: error.message
-            });
+            const data = await fs.readFile(analyticsFile, 'utf8');
+            analytics = JSON.parse(data);
+        } catch (e) {
+            analytics = { userActivity: [] };
         }
         
-        res.json(diagnostics);
-    } catch (error) {
-        logger.error('Error getting diagnostics', error);
-        res.status(500).json({ error: 'Failed to get diagnostics' });
-    }
-});
-
-router.get('/health-check', requireAdmin, (req, res) => {
-    try {
-        const health = {
-            status: 'healthy',
-            timestamp: new Date().toISOString(),
-            checks: []
-        };
+        const userActivity = analytics.userActivity || [];
+        const userStats = {};
         
-        const memUsage = process.memoryUsage();
-        const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-        
-        health.checks.push({
-            name: 'Memory',
-            status: memPercent > 90 ? 'critical' : memPercent > 75 ? 'warning' : 'ok',
-            value: `${Math.round(memPercent)}%`,
-            details: {
-                used: Math.round(memUsage.heapUsed / 1024 / 1024),
-                total: Math.round(memUsage.heapTotal / 1024 / 1024)
+        userActivity.forEach(activity => {
+            const username = activity.user || 'unknown';
+            if (!userStats[username]) {
+                userStats[username] = {
+                    username,
+                    pageViews: 0,
+                    lastActive: null,
+                    appsUsed: new Set(),
+                    actions: []
+                };
+            }
+            
+            userStats[username].pageViews++;
+            if (activity.timestamp) {
+                const timestamp = new Date(activity.timestamp);
+                if (!userStats[username].lastActive || timestamp > new Date(userStats[username].lastActive)) {
+                    userStats[username].lastActive = activity.timestamp;
+                }
+            }
+            
+            if (activity.app) {
+                userStats[username].appsUsed.add(activity.app);
+            }
+            
+            if (activity.action) {
+                userStats[username].actions.push(activity.action);
             }
         });
         
-        const dataDir = path.join(__dirname, '../../data');
-        health.checks.push({
-            name: 'Data Directory',
-            status: fs.existsSync(dataDir) ? 'ok' : 'error',
-            value: fs.existsSync(dataDir) ? 'Accessible' : 'Not Found'
-        });
+        const stats = Object.values(userStats).map(stat => ({
+            username: stat.username,
+            pageViews: stat.pageViews,
+            lastActive: stat.lastActive,
+            appsUsed: Array.from(stat.appsUsed),
+            actionCount: stat.actions.length
+        }));
         
-        const usersFile = path.join(dataDir, 'users.json');
-        health.checks.push({
-            name: 'Users File',
-            status: fs.existsSync(usersFile) ? 'ok' : 'error',
-            value: fs.existsSync(usersFile) ? 'Exists' : 'Missing'
-        });
-        
-        const criticalChecks = health.checks.filter(c => c.status === 'error' || c.status === 'critical');
-        if (criticalChecks.length > 0) {
-            health.status = 'unhealthy';
-        } else {
-            const warnings = health.checks.filter(c => c.status === 'warning');
-            if (warnings.length > 0) {
-                health.status = 'degraded';
-            }
-        }
-        
-        res.json(health);
+        res.json({ stats });
     } catch (error) {
-        logger.error('Error performing health check', error);
-        res.status(500).json({ status: 'error', error: error.message });
-    }
-});
-
-router.post('/validate', requireAdmin, (req, res) => {
-    try {
-        const { type, data } = req.body;
-        
-        if (!type || !data) {
-            return res.status(400).json({ error: 'Type and data are required' });
-        }
-        
-        let result;
-        
-        switch (type) {
-            case 'username':
-                result = validator.validateUsername(data);
-                break;
-            case 'password':
-                result = validator.validatePassword(data);
-                break;
-            case 'role':
-                result = validator.validateRole(data);
-                break;
-            case 'path':
-                result = validator.validateNetworkPath(data);
-                break;
-            case 'email':
-                result = validator.validateEmail(data);
-                break;
-            case 'port':
-                result = validator.validatePort(data);
-                break;
-            default:
-                return res.status(400).json({ error: 'Invalid validation type' });
-        }
-        
-        res.json(result);
-    } catch (error) {
-        logger.error('Error validating data', error);
-        res.status(500).json({ error: 'Validation failed' });
+        console.error('Error fetching user activity:', error);
+        res.status(500).json({ error: 'Failed to fetch user activity' });
     }
 });
 
 module.exports = router;
-
-
-
-
