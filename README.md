@@ -67,10 +67,10 @@ TripleA
 
 ---
 
-**Version**: 2.1.0  
+**Version**: 2.0.0  
 **Status**: ✅ Production Ready
 
-## 🆕 Latest Updates (v2.1.0)
+## 🆕 Latest Updates (v2.0.0)
 
 - ✅ **Security**: Rate limiting, security headers, input validation
 - ✅ **Performance**: Gzip compression, smart caching, optimized requests
