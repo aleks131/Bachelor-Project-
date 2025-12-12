@@ -144,8 +144,17 @@ app.use('/data/thumbnails', express.static(path.join(__dirname, '../data/thumbna
 }));
 
 app.use('/mockups', express.static(path.join(__dirname, '../mockups'), {
-    maxAge: '1y',
-    etag: true
+    maxAge: 0,
+    etag: false,
+    lastModified: false,
+    setHeaders: (res, filePath) => {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        if (filePath.endsWith('.png')) {
+            res.setHeader('Content-Type', 'image/png');
+        }
+    }
 }));
 
 app.get('/', (req, res) => {
