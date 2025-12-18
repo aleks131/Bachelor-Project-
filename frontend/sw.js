@@ -21,6 +21,17 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
     
+    // Skip caching for unsupported schemes (chrome-extension, chrome, etc.)
+    const url = new URL(event.request.url);
+    if (url.protocol === 'chrome-extension:' || url.protocol === 'chrome:' || url.protocol === 'moz-extension:') {
+        return; // Let browser handle these requests
+    }
+    
+    // Skip caching for non-HTTP(S) requests
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return;
+    }
+    
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
@@ -33,7 +44,11 @@ self.addEventListener('fetch', (event) => {
                     }
                     const responseToCache = response.clone();
                     caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
+                        try {
+                            cache.put(event.request, responseToCache);
+                        } catch (error) {
+                            console.warn('Failed to cache request:', event.request.url, error);
+                        }
                     });
                     return response;
                 });

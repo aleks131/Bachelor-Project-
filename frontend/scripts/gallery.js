@@ -188,6 +188,9 @@ class ImageGallery {
 
             this.updateFolderSelect(data);
             
+            // Load placeholder images for Numbers and Plan if they exist
+            this.loadPlaceholderImages();
+            
             if (this.images.length > 0) {
                 this.currentIndex = 0;
                 this.showImage(0);
@@ -195,6 +198,44 @@ class ImageGallery {
         } catch (error) {
             console.error('Failed to load images:', error);
             this.showError('Failed to load images');
+            // Still try to load placeholders even if main images fail
+            this.loadPlaceholderImages();
+        }
+    }
+    
+    loadPlaceholderImages() {
+        // Load Numbers Image placeholder - root files use /api/gallery/images/:filename
+        if (this.numbersImage) {
+            this.numbersImage.src = '/api/gallery/images/numbers-image.png';
+            this.numbersImage.onerror = () => {
+                // Try alternative path in placeholders folder
+                this.numbersImage.src = '/api/gallery/images/placeholders/numbers-image.png';
+                this.numbersImage.onerror = () => {
+                    // Hide if both fail
+                    console.warn('Numbers image placeholder not found');
+                    this.numbersImage.style.display = 'none';
+                };
+            };
+            this.numbersImage.onload = () => {
+                this.numbersImage.style.display = 'block';
+            };
+        }
+        
+        // Load Plan Image placeholder - root files use /api/gallery/images/:filename
+        if (this.planImage) {
+            this.planImage.src = '/api/gallery/images/plan-image.png';
+            this.planImage.onerror = () => {
+                // Try alternative path in placeholders folder
+                this.planImage.src = '/api/gallery/images/placeholders/plan-image.png';
+                this.planImage.onerror = () => {
+                    // Hide if both fail
+                    console.warn('Plan image placeholder not found');
+                    this.planImage.style.display = 'none';
+                };
+            };
+            this.planImage.onload = () => {
+                this.planImage.style.display = 'block';
+            };
         }
     }
 
