@@ -439,7 +439,7 @@ select:focus {
     box-shadow: var(--card-shadow);
     overflow: hidden;
     position: relative;
-    border: 2px solid var(--border-color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     padding: 10px;
 }
 
@@ -453,7 +453,7 @@ select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--border-color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     padding: 10px;
 }
 
