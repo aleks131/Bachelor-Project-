@@ -1,6 +1,6 @@
 # Architecture Diagrams
 
-This folder contains all 12 architecture diagrams for Smart Solutions by TripleA.
+This folder contains all 11 required architecture diagrams for Smart Solutions by TripleA.
 
 ## 📐 Diagrams Overview
 
@@ -12,13 +12,12 @@ This folder contains all 12 architecture diagrams for Smart Solutions by TripleA
 5. **UI Sitemap** - Platform scale
 6. **User Journey Map** - Productivity problem solution
 
-### Appendix Diagrams (6)
+### Appendix Diagrams (5)
 7. **Software Stack Diagram** - Layered view (Frontend/Backend/Data)
 8. **Main Sequence Diagram** - System initialization & login flow
 9. **Security Flowchart (RBAC)** - Login & role verification logic
 10. **Image Optimization Activity Diagram** - Performance optimization logic
 11. **Data Schema (JSON)** - Data structure documentation
-12. **Code Snippets** - Key algorithms
 
 ## 🎨 How to Render Diagrams
 
@@ -42,27 +41,27 @@ This folder contains all 12 architecture diagrams for Smart Solutions by TripleA
 
 ## 📁 Files
 
-- **PLANTUML-DIAGRAMS.puml** - All 12 diagrams in one file
-- **01-12-*.md** - Individual markdown documentation for each diagram
+- **PLANTUML-DIAGRAMS.puml** - All diagrams in one file (includes bonus Code Snippets diagram)
+- **01-12-*.md** - Individual markdown documentation for required diagrams
 
 ## 📝 Diagram Index
 
-| # | Diagram Name | File | PlantUML ID |
-|---|--------------|------|-------------|
-| 1 | High-Level Architecture | `01-High-Level-Architecture.md` | Diagram-01 |
-| 2 | Software Stack | `02-Software-Stack.md` | Diagram-02 |
-| 3 | Real-Time Sequence | `03-Sequence-Real-Time-Update.md` | Diagram-03 |
-| 4 | Image Optimization | `04-Activity-Image-Optimization.md` | Diagram-04 |
-| 5 | Security RBAC | `05-Security-RBAC.md` | Diagram-05 |
-| 6 | Data Schema | `06-Data-Schema.md` | Diagram-06 |
-| 7 | UI Sitemap | `07-UI-Sitemap.md` | Diagram-07 |
-| 8 | Deployment | `08-Deployment.md` | Diagram-08 |
-| 9 | Code Snippets | `09-Code-Snippets.md` | Diagram-09 |
-| 10 | Use Case | `10-Use-Case.md` | Diagram-10 |
-| 11 | User Journey Map | `11-User-Journey-Map.md` | Diagram-11 |
-| 12 | Main Sequence | `12-Main-Sequence-System-Init-Login.md` | Diagram-12 |
+| # | Diagram Name | File | PlantUML ID | Location |
+|---|--------------|------|-------------|----------|
+| 1 | High-Level Architecture | `01-High-Level-Architecture.md` | Diagram-01 | Main Report |
+| 2 | Software Stack | `02-Software-Stack.md` | Diagram-02 | Appendix |
+| 3 | Real-Time Sequence | `03-Sequence-Real-Time-Update.md` | Diagram-03 | Main Report |
+| 4 | Image Optimization | `04-Activity-Image-Optimization.md` | Diagram-04 | Appendix |
+| 5 | Security RBAC | `05-Security-RBAC.md` | Diagram-05 | Appendix |
+| 6 | Data Schema | `06-Data-Schema.md` | Diagram-06 | Appendix |
+| 7 | UI Sitemap | `07-UI-Sitemap.md` | Diagram-07 | Main Report |
+| 8 | Deployment | `08-Deployment.md` | Diagram-08 | Main Report |
+| 9 | Use Case | `10-Use-Case.md` | Diagram-10 | Main Report |
+| 10 | User Journey Map | `11-User-Journey-Map.md` | Diagram-11 | Main Report |
+| 11 | Main Sequence | `12-Main-Sequence-System-Init-Login.md` | Diagram-12 | Appendix |
 
 ---
 
-**Total**: 12 diagrams ✅ All complete and ready for thesis submission
+**Total**: 11 required diagrams ✅ All complete and ready for thesis submission
 
+**Note**: The PlantUML file also includes Diagram-09 (Code Snippets) as a bonus diagram, but it is not required for thesis submission.
