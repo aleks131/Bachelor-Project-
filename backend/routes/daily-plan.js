@@ -8,6 +8,15 @@ const config = require('../../data/config.json');
 const router = express.Router();
 const SUPPORTED_FORMATS = config.supportedFormats.map(f => f.toLowerCase());
 
+// Helper to resolve paths relative to project root if they aren't absolute
+function resolvePath(inputPath) {
+    if (path.isAbsolute(inputPath)) {
+        return path.normalize(inputPath);
+    }
+    // Resolve relative to the UNIFIED-APP directory (which is 2 levels up from backend/routes)
+    return path.join(__dirname, '../../', inputPath);
+}
+
 function getMediaType(extension) {
     const videoFormats = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.flv'];
     return videoFormats.includes(extension.toLowerCase()) ? 'video' : 'image';
@@ -15,20 +24,22 @@ function getMediaType(extension) {
 
 function getDailyPlanImages(imagesDir) {
     const data = {};
+    const absoluteImagesDir = resolvePath(imagesDir);
+
     try {
-        if (!fs.existsSync(imagesDir)) {
-            console.error(`Daily Plan images directory not found: ${imagesDir}`);
+        if (!fs.existsSync(absoluteImagesDir)) {
+            console.error(`Daily Plan images directory not found: ${absoluteImagesDir}`);
             return data;
         }
 
-        const folders = fs.readdirSync(imagesDir)
+        const folders = fs.readdirSync(absoluteImagesDir)
             .filter(item => {
-                const folderPath = path.join(imagesDir, item);
+                const folderPath = path.join(absoluteImagesDir, item);
                 return fs.statSync(folderPath).isDirectory();
             });
         
         folders.forEach(folder => {
-            const folderPath = path.join(imagesDir, folder);
+            const folderPath = path.join(absoluteImagesDir, folder);
             try {
                 const files = fs.readdirSync(folderPath)
                     .filter(file => SUPPORTED_FORMATS.includes(
@@ -56,9 +67,11 @@ function getDailyPlanImages(imagesDir) {
 }
 
 function setupDailyPlanWatcher(imagesDir, wss) {
+    const absoluteImagesDir = resolvePath(imagesDir);
     const monitoring = require('../utils/monitoring');
-    monitoring.trackFileWatcher(imagesDir, 'add');
-    const watcher = chokidar.watch(imagesDir, {
+    monitoring.trackFileWatcher(absoluteImagesDir, 'add');
+    
+    const watcher = chokidar.watch(absoluteImagesDir, {
         persistent: true,
         ignoreInitial: true,
         awaitWriteFinish: {
@@ -74,11 +87,11 @@ function setupDailyPlanWatcher(imagesDir, wss) {
     });
 
     watcher
-        .on('add', filePath => handleFileChange('add', filePath, imagesDir, wss))
-        .on('change', filePath => handleFileChange('change', filePath, imagesDir, wss))
-        .on('unlink', filePath => handleFileChange('unlink', filePath, imagesDir, wss))
-        .on('addDir', folderPath => handleFolderChange('add', folderPath, imagesDir, wss))
-        .on('unlinkDir', folderPath => handleFolderChange('remove', folderPath, imagesDir, wss));
+        .on('add', filePath => handleFileChange('add', filePath, absoluteImagesDir, wss))
+        .on('change', filePath => handleFileChange('change', filePath, absoluteImagesDir, wss))
+        .on('unlink', filePath => handleFileChange('unlink', filePath, absoluteImagesDir, wss))
+        .on('addDir', folderPath => handleFolderChange('add', folderPath, absoluteImagesDir, wss))
+        .on('unlinkDir', folderPath => handleFolderChange('remove', folderPath, absoluteImagesDir, wss));
 
     return watcher;
 }
@@ -128,10 +141,6 @@ function broadcastToDailyPlan(wss, message) {
             }
         }
     });
-    
-    if (sentCount > 0) {
-        console.log(`Broadcasted ${message.type} to ${sentCount} daily-plan client(s)`);
-    }
 }
 
 router.get('/images', (req, res) => {
@@ -142,11 +151,11 @@ router.get('/images', (req, res) => {
 
     let imagesDir;
     if (user.networkPaths.dailyPlan) {
-        imagesDir = path.normalize(user.networkPaths.dailyPlan);
+        imagesDir = user.networkPaths.dailyPlan;
     } else if (user.networkPaths.main) {
-        imagesDir = path.normalize(user.networkPaths.main);
+        imagesDir = user.networkPaths.main;
     } else {
-        imagesDir = path.join(__dirname, '../../images');
+        imagesDir = path.join(__dirname, '../../data/content/demo-images');
     }
 
     try {
@@ -164,14 +173,15 @@ router.get('/images/:folder/:filename', (req, res) => {
     
     let imagesDir;
     if (user.networkPaths.dailyPlan) {
-        imagesDir = path.normalize(user.networkPaths.dailyPlan);
+        imagesDir = user.networkPaths.dailyPlan;
     } else if (user.networkPaths.main) {
-        imagesDir = path.normalize(user.networkPaths.main);
+        imagesDir = user.networkPaths.main;
     } else {
-        imagesDir = path.join(__dirname, '../../images');
+        imagesDir = path.join(__dirname, '../../data/content/demo-images');
     }
     
-    const filePath = path.join(imagesDir, folder, decodeURIComponent(filename));
+    const absoluteImagesDir = resolvePath(imagesDir);
+    const filePath = path.join(absoluteImagesDir, folder, decodeURIComponent(filename));
     
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);

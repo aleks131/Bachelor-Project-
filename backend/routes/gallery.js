@@ -8,6 +8,15 @@ const config = require('../../data/config.json');
 const router = express.Router();
 const SUPPORTED_FORMATS = config.supportedFormats.map(f => f.toLowerCase());
 
+// Helper to resolve paths relative to project root if they aren't absolute
+function resolvePath(inputPath) {
+    if (path.isAbsolute(inputPath)) {
+        return path.normalize(inputPath);
+    }
+    // Resolve relative to the UNIFIED-APP directory (which is 2 levels up from backend/routes)
+    return path.join(__dirname, '../../', inputPath);
+}
+
 function getMediaType(extension) {
     const videoFormats = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.flv'];
     return videoFormats.includes(extension.toLowerCase()) ? 'video' : 'image';
@@ -15,17 +24,21 @@ function getMediaType(extension) {
 
 function getGalleryImages(imagesDir) {
     const data = {};
+    const absoluteImagesDir = resolvePath(imagesDir);
+
     try {
-        if (!fs.existsSync(imagesDir)) {
-            console.error(`Gallery images directory not found: ${imagesDir}`);
+        if (!fs.existsSync(absoluteImagesDir)) {
+            console.error(`Gallery images directory not found: ${absoluteImagesDir}`);
             return data;
         }
 
-        const rootFiles = fs.readdirSync(imagesDir)
+        const rootFiles = fs.readdirSync(absoluteImagesDir)
             .filter(file => {
-                const filePath = path.join(imagesDir, file);
-                const isFile = fs.statSync(filePath).isFile();
-                return isFile && SUPPORTED_FORMATS.includes(path.extname(file).toLowerCase());
+                const filePath = path.join(absoluteImagesDir, file);
+                try {
+                    const isFile = fs.statSync(filePath).isFile();
+                    return isFile && SUPPORTED_FORMATS.includes(path.extname(file).toLowerCase());
+                } catch (e) { return false; }
             })
             .map(file => ({
                 name: file,
@@ -39,14 +52,16 @@ function getGalleryImages(imagesDir) {
             data['root'] = rootFiles;
         }
         
-        const folders = fs.readdirSync(imagesDir)
+        const folders = fs.readdirSync(absoluteImagesDir)
             .filter(item => {
-                const folderPath = path.join(imagesDir, item);
-                return fs.statSync(folderPath).isDirectory();
+                const folderPath = path.join(absoluteImagesDir, item);
+                try {
+                    return fs.statSync(folderPath).isDirectory();
+                } catch (e) { return false; }
             });
         
         folders.forEach(folder => {
-            const folderPath = path.join(imagesDir, folder);
+            const folderPath = path.join(absoluteImagesDir, folder);
             try {
                 const files = fs.readdirSync(folderPath)
                     .filter(file => SUPPORTED_FORMATS.includes(
@@ -74,9 +89,11 @@ function getGalleryImages(imagesDir) {
 }
 
 function setupGalleryWatcher(imagesDir, wss) {
+    const absoluteImagesDir = resolvePath(imagesDir);
     const monitoring = require('../utils/monitoring');
-    monitoring.trackFileWatcher(imagesDir, 'add');
-    const watcher = chokidar.watch(imagesDir, {
+    monitoring.trackFileWatcher(absoluteImagesDir, 'add');
+    
+    const watcher = chokidar.watch(absoluteImagesDir, {
         persistent: true,
         ignoreInitial: true,
         awaitWriteFinish: {
@@ -92,11 +109,11 @@ function setupGalleryWatcher(imagesDir, wss) {
     });
 
     watcher
-        .on('add', filePath => handleFileChange('add', filePath, imagesDir, wss))
-        .on('change', filePath => handleFileChange('change', filePath, imagesDir, wss))
-        .on('unlink', filePath => handleFileChange('unlink', filePath, imagesDir, wss))
-        .on('addDir', folderPath => handleFolderChange('add', folderPath, imagesDir, wss))
-        .on('unlinkDir', folderPath => handleFolderChange('remove', folderPath, imagesDir, wss));
+        .on('add', filePath => handleFileChange('add', filePath, absoluteImagesDir, wss))
+        .on('change', filePath => handleFileChange('change', filePath, absoluteImagesDir, wss))
+        .on('unlink', filePath => handleFileChange('unlink', filePath, absoluteImagesDir, wss))
+        .on('addDir', folderPath => handleFolderChange('add', folderPath, absoluteImagesDir, wss))
+        .on('unlinkDir', folderPath => handleFolderChange('remove', folderPath, absoluteImagesDir, wss));
 
     return watcher;
 }
@@ -146,10 +163,6 @@ function broadcastToGallery(wss, message) {
             }
         }
     });
-    
-    if (sentCount > 0) {
-        console.log(`Broadcasted ${message.type} to ${sentCount} gallery client(s)`);
-    }
 }
 
 router.get('/images', (req, res) => {
@@ -160,11 +173,11 @@ router.get('/images', (req, res) => {
 
     let imagesDir;
     if (user.networkPaths.gallery) {
-        imagesDir = path.normalize(user.networkPaths.gallery);
+        imagesDir = user.networkPaths.gallery;
     } else if (user.networkPaths.main) {
-        imagesDir = path.normalize(user.networkPaths.main);
+        imagesDir = user.networkPaths.main;
     } else {
-        return res.status(500).json({ error: 'Gallery path not configured' });
+        imagesDir = path.join(__dirname, '../../data/content/demo-images');
     }
 
     try {
@@ -182,18 +195,19 @@ router.get('/images/:folder/:filename', (req, res) => {
     
     let imagesDir;
     if (user.networkPaths.gallery) {
-        imagesDir = path.normalize(user.networkPaths.gallery);
+        imagesDir = user.networkPaths.gallery;
     } else if (user.networkPaths.main) {
-        imagesDir = path.normalize(user.networkPaths.main);
+        imagesDir = user.networkPaths.main;
     } else {
-        return res.status(500).send('Gallery path not configured');
+        imagesDir = path.join(__dirname, '../../data/content/demo-images');
     }
     
+    const absoluteImagesDir = resolvePath(imagesDir);
     let filePath;
     if (folder === 'root') {
-        filePath = path.join(imagesDir, decodeURIComponent(filename));
+        filePath = path.join(absoluteImagesDir, decodeURIComponent(filename));
     } else {
-        filePath = path.join(imagesDir, folder, decodeURIComponent(filename));
+        filePath = path.join(absoluteImagesDir, folder, decodeURIComponent(filename));
     }
     
     if (fs.existsSync(filePath)) {
@@ -209,14 +223,15 @@ router.get('/images/:filename', (req, res) => {
     
     let imagesDir;
     if (user.networkPaths.gallery) {
-        imagesDir = path.normalize(user.networkPaths.gallery);
+        imagesDir = user.networkPaths.gallery;
     } else if (user.networkPaths.main) {
-        imagesDir = path.normalize(user.networkPaths.main);
+        imagesDir = user.networkPaths.main;
     } else {
-        return res.status(500).send('Gallery path not configured');
+        imagesDir = path.join(__dirname, '../../data/content/demo-images');
     }
     
-    const filePath = path.join(imagesDir, decodeURIComponent(filename));
+    const absoluteImagesDir = resolvePath(imagesDir);
+    const filePath = path.join(absoluteImagesDir, decodeURIComponent(filename));
     
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
