@@ -22,7 +22,7 @@ async function loadUserData() {
         const configData = await configResponse.json();
         appConfig = configData;
         
-        document.getElementById('userInfo').textContent = `Welcome, ${currentUser.username} (${currentUser.role})`;
+        // User info removed for cleaner UI - user info is in sidebar
     } catch (error) {
         console.error('Error loading user data:', error);
         window.location.href = '/';

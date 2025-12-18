@@ -63,8 +63,7 @@ body {
 }
 
 .user-info {
-    color: #666;
-    font-size: 14px;
+    display: none;
 }
 
 .logout-button {
