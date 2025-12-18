@@ -409,6 +409,23 @@ app.use('/api/system', systemRoutes);
 
 const monitoring = require('./utils/monitoring');
 const logger = require('./utils/logger');
+const driveScanner = require('./utils/drive-scanner');
+const capabilitiesCheck = require('./utils/capabilities-check');
+
+// Start Drive Scanner
+try {
+    driveScanner.start();
+    driveScanner.on('driveAttached', (drive) => {
+        logger.info(`Drive attached: ${drive}`);
+        // Here you could trigger a scan of the new drive
+        // folderScannerRoutes.scanDrive(drive); // Hypothetical
+    });
+    driveScanner.on('driveRemoved', (drive) => {
+        logger.info(`Drive removed: ${drive}`);
+    });
+} catch (error) {
+    logger.error('Failed to start Drive Scanner', error);
+}
 
 app.use((req, res, next) => {
     const startTime = Date.now();
@@ -664,6 +681,10 @@ server.listen(PORT, '0.0.0.0', () => {
             apps: Object.keys(config.apps).length,
             users: users.length
         });
+        
+        // Run Capabilities Check (Thesis Verification)
+        capabilitiesCheck.runCheck();
+        
     } catch (error) {
         console.error('Error during startup:', error);
         logger.error('Startup error', error);

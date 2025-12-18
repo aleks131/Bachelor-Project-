@@ -55,11 +55,13 @@ function scanFolder(folderPath, maxDepth = 2, currentDepth = 0) {
 
                     const ext = path.extname(item).toLowerCase();
                     if (SUPPORTED_FORMATS.includes(ext)) {
-                        const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.svg'].includes(ext);
+                        const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.svg', '.avif', '.heic', '.ico'].includes(ext);
                         const isVideo = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.flv'].includes(ext);
+                        const isDocument = ['.pdf', '.ppt', '.pptx', '.doc', '.docx'].includes(ext);
 
                         if (isImage) results.images++;
                         else if (isVideo) results.videos++;
+                        else if (isDocument) results.other++; // Treat docs as 'other' for now but track them
                         else results.other++;
 
                         results.files.push({
@@ -69,7 +71,8 @@ function scanFolder(folderPath, maxDepth = 2, currentDepth = 0) {
                             modified: stats.mtime.toISOString(),
                             extension: ext,
                             isImage,
-                            isVideo
+                            isVideo,
+                            isDocument
                         });
                     }
                 }
