@@ -29,9 +29,12 @@ function getGalleryImages(imagesDir) {
     const data = {};
     const absoluteImagesDir = resolvePath(imagesDir);
 
+    console.log(`[Gallery] Requesting images from: ${imagesDir}`);
+    console.log(`[Gallery] Resolved absolute path: ${absoluteImagesDir}`);
+
     try {
         if (!fs.existsSync(absoluteImagesDir)) {
-            console.error(`Gallery images directory not found: ${absoluteImagesDir}`);
+            console.error(`[Gallery] Directory NOT FOUND: ${absoluteImagesDir}`);
             return data;
         }
 
@@ -53,6 +56,7 @@ function getGalleryImages(imagesDir) {
 
         if (rootFiles.length > 0) {
             data['root'] = rootFiles;
+            console.log(`[Gallery] Found ${rootFiles.length} root files`);
         }
         
         const folders = fs.readdirSync(absoluteImagesDir)
@@ -63,6 +67,8 @@ function getGalleryImages(imagesDir) {
                 } catch (e) { return false; }
             });
         
+        console.log(`[Gallery] Found folders: ${folders.join(', ')}`);
+
         folders.forEach(folder => {
             const folderPath = path.join(absoluteImagesDir, folder);
             try {
@@ -80,6 +86,7 @@ function getGalleryImages(imagesDir) {
                 
                 if (files.length > 0) {
                     data[folder] = files;
+                    console.log(`[Gallery] Folder '${folder}' has ${files.length} valid files`);
                 }
             } catch (folderError) {
                 console.error(`Error reading folder ${folder}:`, folderError);
@@ -96,6 +103,8 @@ function setupGalleryWatcher(imagesDir, wss) {
     const monitoring = require('../utils/monitoring');
     monitoring.trackFileWatcher(absoluteImagesDir, 'add');
     
+    console.log(`[GalleryWatcher] Watching: ${absoluteImagesDir}`);
+
     const watcher = chokidar.watch(absoluteImagesDir, {
         persistent: true,
         ignoreInitial: true,
@@ -216,6 +225,7 @@ router.get('/images/:folder/:filename', (req, res) => {
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
+        console.error(`[Gallery] File not found: ${filePath}`);
         res.status(404).send('File not found');
     }
 });
@@ -239,6 +249,7 @@ router.get('/images/:filename', (req, res) => {
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
+        console.error(`[Gallery] File not found: ${filePath}`);
         res.status(404).send('File not found');
     }
 });

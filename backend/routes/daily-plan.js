@@ -29,10 +29,15 @@ function getDailyPlanImages(imagesDir) {
     const data = {};
     const absoluteImagesDir = resolvePath(imagesDir);
 
+    console.log(`[DailyPlan] Requesting images from: ${imagesDir}`);
+    console.log(`[DailyPlan] Resolved absolute path: ${absoluteImagesDir}`);
+
     try {
         if (!fs.existsSync(absoluteImagesDir)) {
-            console.error(`Daily Plan images directory not found: ${absoluteImagesDir}`);
+            console.error(`[DailyPlan] Directory NOT FOUND: ${absoluteImagesDir}`);
             return data;
+        } else {
+            console.log(`[DailyPlan] Directory exists.`);
         }
 
         const folders = fs.readdirSync(absoluteImagesDir)
@@ -41,6 +46,8 @@ function getDailyPlanImages(imagesDir) {
                 return fs.statSync(folderPath).isDirectory();
             });
         
+        console.log(`[DailyPlan] Found folders: ${folders.join(', ')}`);
+
         folders.forEach(folder => {
             const folderPath = path.join(absoluteImagesDir, folder);
             try {
@@ -56,6 +63,8 @@ function getDailyPlanImages(imagesDir) {
                         fullPath: `/api/daily-plan/images/${folder}/${encodeURIComponent(file)}`
                     }));
                 
+                console.log(`[DailyPlan] Folder '${folder}' has ${files.length} valid files.`);
+
                 if (files.length > 0) {
                     data[folder] = files;
                 }
@@ -74,6 +83,8 @@ function setupDailyPlanWatcher(imagesDir, wss) {
     const monitoring = require('../utils/monitoring');
     monitoring.trackFileWatcher(absoluteImagesDir, 'add');
     
+    console.log(`[DailyPlanWatcher] Watching: ${absoluteImagesDir}`);
+
     const watcher = chokidar.watch(absoluteImagesDir, {
         persistent: true,
         ignoreInitial: true,
@@ -189,6 +200,7 @@ router.get('/images/:folder/:filename', (req, res) => {
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
+        console.error(`[DailyPlan] File not found: ${filePath}`);
         res.status(404).send('File not found');
     }
 });
