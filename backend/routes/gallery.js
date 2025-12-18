@@ -10,11 +10,14 @@ const SUPPORTED_FORMATS = config.supportedFormats.map(f => f.toLowerCase());
 
 // Helper to resolve paths relative to project root if they aren't absolute
 function resolvePath(inputPath) {
+    if (!inputPath) {
+        return path.join(__dirname, '../../data/content/demo-images');
+    }
     if (path.isAbsolute(inputPath)) {
         return path.normalize(inputPath);
     }
     // Resolve relative to the UNIFIED-APP directory (which is 2 levels up from backend/routes)
-    return path.join(__dirname, '../../', inputPath);
+    return path.resolve(path.join(__dirname, '../../', inputPath));
 }
 
 function getMediaType(extension) {
