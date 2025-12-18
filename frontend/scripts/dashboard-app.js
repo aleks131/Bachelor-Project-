@@ -174,9 +174,38 @@ class PerformanceDashboard {
                         numberEl.textContent = kpi.value;
                         numberEl.className = `kpi-number ${kpi.status || 'blue'}`;
                     }
+                    
+                    // Load image
+                    this.loadKpiImage(cardId, card);
                 }
             });
         });
+    }
+
+    getPlaceholderForKpi(kpiId) {
+        const map = {
+            'kpi-1': '/api/dashboard/images/kpi/kpi1/kpi-card-1.png',
+            'kpi-2': '/api/dashboard/images/kpi/kpi1/kpi-card-2.png',
+            'kpi-3': '/api/dashboard/images/kpi/kpi1/kpi-production-1.png',
+            
+            'kpi-people-1': '/api/dashboard/images/kpi/kpi2/dashboard-kpi-1.png',
+            'kpi-people-2': '/api/dashboard/images/kpi/kpi2/kpi-people-2.png',
+            
+            'kpi-customer-1': '/api/dashboard/images/kpi/kpi2/dashboard-kpi-2.png',
+            'kpi-customer-2': '/api/dashboard/images/kpi/kpi2/kpi-customer-3.png',
+            
+            'kpi-cost-1': '/api/dashboard/images/kpi/kpi2/kpi-cost-4.png'
+        };
+        
+        if (map[kpiId]) return map[kpiId];
+        
+        // Category fallbacks
+        if (kpiId.startsWith('kpi-people')) return '/api/dashboard/images/kpi/kpi2/kpi-people-2.png';
+        if (kpiId.startsWith('kpi-customer')) return '/api/dashboard/images/kpi/kpi2/kpi-customer-3.png';
+        if (kpiId.startsWith('kpi-cost')) return '/api/dashboard/images/kpi/kpi2/kpi-cost-4.png';
+        
+        // Production fallback (kpi-1 etc)
+        return '/api/dashboard/images/kpi/kpi1/kpi-card-1.png';
     }
 
     async loadFiles(source = 'main') {
@@ -244,7 +273,7 @@ class PerformanceDashboard {
     }
 
     loadKpiImage(kpiId, card, imagePath) {
-        const savedPath = localStorage.getItem(`kpi-image-${kpiId}`) || imagePath;
+        const savedPath = localStorage.getItem(`kpi-image-${kpiId}`) || imagePath || this.getPlaceholderForKpi(kpiId);
         const imageContainer = document.createElement('div');
         imageContainer.className = 'kpi-image-container';
         
