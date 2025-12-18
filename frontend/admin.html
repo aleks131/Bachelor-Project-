@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="styles/toast-notifications.css">
     <link rel="stylesheet" href="styles/analytics-dashboard.css">
     <link rel="stylesheet" href="styles/admin-settings.css">
+    <script src="scripts/aggressive-cache-buster.js"></script>
 </head>
 <body>
     <div class="admin-container">
@@ -128,8 +129,12 @@
 
                 <!-- Configuration Section -->
                 <section id="config-section" class="content-section">
-                    <div id="admin-settings-content">
-                        <div class="loading">Loading settings...</div>
+                    <div class="section-header">
+                        <h2>System Configuration</h2>
+                    </div>
+                    <!-- Target container for admin-settings.js -->
+                    <div class="config-form">
+                        <div class="loading">Loading configuration...</div>
                     </div>
                 </section>
 
@@ -162,138 +167,6 @@
                             <i class="fas fa-info-circle"></i>
                             Use the buttons above to run system diagnostics and health checks.
                         </div>
-                    </div>
-                </section>
-            </div>
-        </div>
-
-        <!-- User Modal -->
-        <div id="user-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modal-title">Add User</h3>
-                    <button class="modal-close" id="close-modal">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="user-form">
-                        <input type="hidden" id="user-id">
-                        
-                        <div class="form-group">
-                            <label for="username">Username *</label>
-                            <input type="text" id="username" class="form-input" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Password *</label>
-                            <input type="password" id="password" class="form-input" required>
-                            <small class="form-help">Leave empty when editing to keep current password</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="role">Role *</label>
-                            <select id="role" class="form-select" required>
-                                <option value="admin">Admin</option>
-                                <option value="manager">Manager</option>
-                                <option value="operator">Operator</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Allowed Applications</label>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="allowedApps" value="daily-plan">
-                                    Daily Plan Viewer
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="allowedApps" value="gallery">
-                                    Image Gallery
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="allowedApps" value="dashboard">
-                                    Performance Dashboard
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Network Paths</label>
-                            <div class="paths-grid">
-                                <div class="path-item">
-                                    <label for="path-main">Main Path</label>
-                                    <div class="path-input-group">
-                                        <input type="text" id="path-main" class="form-input path-input" placeholder="K:/path/to/images">
-                                        <button type="button" class="btn btn-sm btn-secondary test-path-btn" data-path="main">
-                                            <i class="fas fa-check"></i> Test
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="path-item">
-                                    <label for="path-daily-plan">Daily Plan Path</label>
-                                    <div class="path-input-group">
-                                        <input type="text" id="path-daily-plan" class="form-input path-input" placeholder="K:/path/to/dailyplan">
-                                        <button type="button" class="btn btn-sm btn-secondary test-path-btn" data-path="dailyPlan">
-                                            <i class="fas fa-check"></i> Test
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="path-item">
-                                    <label for="path-gallery">Gallery Path</label>
-                                    <div class="path-input-group">
-                                        <input type="text" id="path-gallery" class="form-input path-input" placeholder="K:/path/to/gallery">
-                                        <button type="button" class="btn btn-sm btn-secondary test-path-btn" data-path="gallery">
-                                            <i class="fas fa-check"></i> Test
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="path-item">
-                                    <label for="path-extra">Extra Content Path</label>
-                                    <div class="path-input-group">
-                                        <input type="text" id="path-extra" class="form-input path-input" placeholder="K:/path/to/extra">
-                                        <button type="button" class="btn btn-sm btn-secondary test-path-btn" data-path="extra">
-                                            <i class="fas fa-check"></i> Test
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="path-item">
-                                    <label for="path-kpi">KPI Meeting Path</label>
-                                    <div class="path-input-group">
-                                        <input type="text" id="path-kpi" class="form-input path-input" placeholder="K:/path/to/kpi">
-                                        <button type="button" class="btn btn-sm btn-secondary test-path-btn" data-path="kpi">
-                                            <i class="fas fa-check"></i> Test
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="cancel-user-btn">Cancel</button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save User
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-                        <div class="form-group">
-                            <label for="server-port">Server Port</label>
-                            <input type="number" id="server-port" class="form-input" min="1" max="65535">
-                        </div>
-                        <div class="form-group">
-                            <label for="session-secret">Session Secret</label>
-                            <input type="text" id="session-secret" class="form-input">
-                        </div>
-                        <button id="save-config-btn" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Configuration
-                        </button>
                     </div>
                 </section>
             </div>

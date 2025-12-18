@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await checkAdminAccess();
     setupEventListeners();
     loadUsers();
-    loadConfig();
+    // loadConfig();
 });
 
 async function checkAdminAccess() {
@@ -57,7 +57,7 @@ function setupEventListeners() {
     document.getElementById('close-modal').addEventListener('click', closeUserModal);
     document.getElementById('cancel-user-btn').addEventListener('click', closeUserModal);
     document.getElementById('user-form').addEventListener('submit', handleUserSubmit);
-    document.getElementById('save-config-btn').addEventListener('click', saveConfig);
+    // document.getElementById('save-config-btn').addEventListener('click', saveConfig);
 
     document.querySelectorAll('.test-path-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {

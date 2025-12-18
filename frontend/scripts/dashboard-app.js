@@ -6,7 +6,7 @@ class PerformanceDashboard {
         this.currentSource = 'main';
         this.currentKpiCard = null;
         this.dragEnabled = false;
-        this.sortableInstances = [];
+        this.dragDropManagers = [];
         
         this.initializeElements();
         this.loadUserConfig();
@@ -20,7 +20,7 @@ class PerformanceDashboard {
             this.initializeWebSocket();
             this.loadKpiData();
             this.initializeSettings();
-            this.initializeSortable();
+            this.initializeDragDrop(); // Changed from initializeSortable
         } catch (error) {
             console.error('Error loading user config:', error);
             window.location.href = '/dashboard';
@@ -78,11 +78,11 @@ class PerformanceDashboard {
         });
 
         document.querySelectorAll('.kpi-card').forEach(card => {
-            card.addEventListener('dblclick', () => this.openFileBrowser(card));
+            card.addEventListener('dblclick', () => {
+                if (!this.dragEnabled) this.openFileBrowser(card);
+            });
             card.addEventListener('click', (e) => {
-                if (!e.target.closest('button')) {
-                    // Handle click to select image
-                }
+                // Handle click if needed
             });
         });
     }
@@ -187,6 +187,7 @@ class PerformanceDashboard {
             'kpi-1': '/api/dashboard/images/kpi/kpi1/kpi-card-1.png',
             'kpi-2': '/api/dashboard/images/kpi/kpi1/kpi-card-2.png',
             'kpi-3': '/api/dashboard/images/kpi/kpi1/kpi-production-1.png',
+            'kpi-4': '/api/dashboard/images/kpi/kpi1/kpi-card-1.png', // Reuse
             
             'kpi-people-1': '/api/dashboard/images/kpi/kpi2/dashboard-kpi-1.png',
             'kpi-people-2': '/api/dashboard/images/kpi/kpi2/kpi-people-2.png',
@@ -194,17 +195,15 @@ class PerformanceDashboard {
             'kpi-customer-1': '/api/dashboard/images/kpi/kpi2/dashboard-kpi-2.png',
             'kpi-customer-2': '/api/dashboard/images/kpi/kpi2/kpi-customer-3.png',
             
-            'kpi-cost-1': '/api/dashboard/images/kpi/kpi2/kpi-cost-4.png'
+            'kpi-cost-1': '/api/dashboard/images/kpi/kpi2/kpi-cost-4.png',
         };
         
         if (map[kpiId]) return map[kpiId];
+        if (kpiId.includes('production')) return '/api/dashboard/images/kpi/kpi1/kpi-production-1.png';
+        if (kpiId.includes('people')) return '/api/dashboard/images/kpi/kpi2/kpi-people-2.png';
+        if (kpiId.includes('customer')) return '/api/dashboard/images/kpi/kpi2/kpi-customer-3.png';
+        if (kpiId.includes('cost')) return '/api/dashboard/images/kpi/kpi2/kpi-cost-4.png';
         
-        // Category fallbacks
-        if (kpiId.startsWith('kpi-people')) return '/api/dashboard/images/kpi/kpi2/kpi-people-2.png';
-        if (kpiId.startsWith('kpi-customer')) return '/api/dashboard/images/kpi/kpi2/kpi-customer-3.png';
-        if (kpiId.startsWith('kpi-cost')) return '/api/dashboard/images/kpi/kpi2/kpi-cost-4.png';
-        
-        // Production fallback (kpi-1 etc)
         return '/api/dashboard/images/kpi/kpi1/kpi-card-1.png';
     }
 
@@ -281,7 +280,10 @@ class PerformanceDashboard {
         img.src = savedPath;
         img.alt = `KPI Image for ${kpiId}`;
         img.onerror = () => {
-            imageContainer.innerHTML = '<div class="image-error">Failed to load image</div>';
+            // Only show placeholder on error if we weren't already trying to load it
+            if (!savedPath.includes('placeholder')) {
+                img.src = this.getPlaceholderForKpi(kpiId);
+            }
         };
         
         imageContainer.appendChild(img);
@@ -294,19 +296,23 @@ class PerformanceDashboard {
         }
     }
 
-    initializeSortable() {
+    initializeDragDrop() {
+        if (typeof DragDropManager === 'undefined') {
+            console.error('DragDropManager not loaded');
+            return;
+        }
+
         const columns = document.querySelectorAll('.grid-column, .sidebar-column');
         
         columns.forEach(column => {
-            const sortable = new Sortable(column, {
-                group: 'kpi-cards',
-                animation: 150,
-                handle: '.kpi-card',
+            const manager = new DragDropManager(column, {
+                itemSelector: '.kpi-card',
+                handle: '.kpi-card', // Entire card is handle
                 onEnd: () => {
                     this.saveLayoutToStorage();
                 }
             });
-            this.sortableInstances.push(sortable);
+            this.dragDropManagers.push(manager);
         });
     }
 
@@ -314,12 +320,11 @@ class PerformanceDashboard {
         this.dragEnabled = !this.dragEnabled;
         document.body.classList.toggle('drag-mode', this.dragEnabled);
         
-        this.sortableInstances.forEach(sortable => {
-            sortable.option('disabled', !this.dragEnabled);
-        });
-
+        // DragDropManager manages draggable attribute dynamically based on interaction
+        // But we can add visual cues
+        
         if (this.enableDragMode) {
-            this.enableDragMode.textContent = this.dragEnabled 
+            this.enableDragMode.innerHTML = this.dragEnabled 
                 ? '<i class="fas fa-lock"></i> Disable Drag' 
                 : '<i class="fas fa-arrows-alt"></i> Rearrange Cards';
         }
@@ -332,6 +337,9 @@ class PerformanceDashboard {
             layout[colIndex] = cardIds;
         });
         localStorage.setItem('dashboard-layout', JSON.stringify(layout));
+        
+        // Show success toast
+        if (window.showToast) window.showToast('Layout saved successfully!', 'success');
     }
 
     restoreSavedLayout() {
@@ -354,8 +362,25 @@ class PerformanceDashboard {
     }
 
     enterMeetingModeFunc() {
-        // Meeting mode functionality
-        console.log('Entering meeting mode');
+        document.body.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+        document.body.classList.add('meeting-mode');
+        
+        // Add exit button
+        let exitBtn = document.getElementById('exitMeetingBtn');
+        if (!exitBtn) {
+            exitBtn = document.createElement('button');
+            exitBtn.id = 'exitMeetingBtn';
+            exitBtn.innerHTML = '<i class="fas fa-times"></i> Exit Meeting';
+            exitBtn.className = 'btn-floating-exit';
+            exitBtn.onclick = () => {
+                if (document.exitFullscreen) document.exitFullscreen();
+                document.body.classList.remove('meeting-mode');
+                exitBtn.remove();
+            };
+            document.body.appendChild(exitBtn);
+        }
     }
 
     refreshKpiImages() {

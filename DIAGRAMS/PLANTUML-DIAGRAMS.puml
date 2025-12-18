@@ -717,4 +717,270 @@ end note
 
 @enduml
 
+@startuml Diagram-10-Use-Case
+!theme plain
+title Use Case Diagram\nSmart Solutions by TripleA
+
+left to right direction
+
+actor Admin as Admin
+actor Manager as Manager
+actor Operator as Operator
+
+rectangle "Smart Solutions Platform" {
+  usecase UC1 as "Manage Users\n(Create, Edit, Delete)"
+  usecase UC2 as "Configure System Settings\n(Port, Paths, Security)"
+  usecase UC3 as "Access Monitoring Dashboard\n(System Health, Metrics)"
+  usecase UC4 as "Create Custom Layouts\n(Layout Builder)"
+  usecase UC5 as "Manage Network Paths\n(Configure Content Sources)"
+  usecase UC6 as "Backup & Restore System\n(Data Management)"
+  
+  usecase UC7 as "View Daily Plans\n(Time-based Schedules)"
+  usecase UC8 as "Browse Image Gallery\n(Images & Videos)"
+  usecase UC9 as "View Performance KPIs\n(Dashboard Display)"
+  usecase UC10 as "Upload Files\n(Content Management)"
+  usecase UC11 as "Organize Content\n(Copy, Move, Delete)"
+  
+  usecase UC12 as "View Assigned Content\n(Read-Only Access)"
+  usecase UC13 as "Use Global Search\n(Ctrl+K)"
+  usecase UC14 as "Access User Guide\n(Documentation)"
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+
+Manager --> UC7
+Manager --> UC8
+Manager --> UC9
+Manager --> UC10
+Manager --> UC11
+Manager --> UC12
+Manager --> UC13
+Manager --> UC14
+
+Operator --> UC7
+Operator --> UC12
+Operator --> UC13
+Operator --> UC14
+
+note right of Admin
+  **Admin Role:**
+  Full system access
+  - User management
+  - System configuration
+  - Content management
+  - Monitoring & diagnostics
+end note
+
+note right of Manager
+  **Manager Role:**
+  Content management access
+  - View all content
+  - Upload & organize files
+  - Create layouts
+  - No user/system management
+end note
+
+note right of Operator
+  **Operator Role:**
+  View-only access
+  - View assigned content
+  - Use search & guide
+  - No content modification
+end note
+
+@enduml
+
+@startuml Diagram-11-User-Journey-Map
+!theme plain
+title User Journey Map: Productivity Problem Solution\nSmart Solutions by TripleA
+
+skinparam activity {
+  BackgroundColor #E8F4F8
+  BorderColor #2E86AB
+}
+
+start
+
+:Before: Manual Process\n(Time-consuming, Error-prone);
+
+partition "Problem Identification" {
+  :Staff needs to prepare\npresentations manually;
+  :Copy files from network drive;
+  :Rename files for organization;
+  :Format images for display;
+  :Arrange slides in order;
+  :Test on display screen;
+  note right
+    **Pain Points:**
+    - 2-3 hours per presentation
+    - Human errors
+    - Inconsistent formatting
+    - Manual file management
+  end note
+}
+
+partition "Solution Implementation" {
+  :Install Smart Solutions\non Raspberry Pi;
+  :Configure network paths\n(One-time setup);
+  :Place content in folders\n(Standard workflow);
+}
+
+partition "Automated Process" {
+  :System detects new files\n(Chokidar Watcher);
+  :Auto-optimizes images\n(Sharp Processing);
+  :Generates thumbnails\n(Performance);
+  :Updates display instantly\n(WebSocket);
+  note right
+    **Benefits:**
+    - 70% time reduction
+    - Zero manual errors
+    - Consistent formatting
+    - Real-time updates
+  end note
+}
+
+partition "Result" {
+  :Presentation ready\nin < 5 minutes;
+  :Display updates automatically;
+  :Staff focuses on content\nnot formatting;
+  :Consistent quality\nacross all displays;
+}
+
+stop
+
+note bottom
+  **Time Savings:**
+  Before: 2-3 hours manual work
+  After: < 5 minutes automated
+  ROI: 70% productivity increase
+end note
+
+@enduml
+
+@startuml Diagram-12-Main-Sequence-System-Init-Login
+!theme plain
+title Main Sequence Diagram: System Initialization & Login Flow\nSmart Solutions by TripleA
+
+actor User
+participant "Browser" as Browser
+participant "Express Server" as Server
+participant "Session Store" as Session
+participant "Auth Module" as Auth
+participant "users.json" as UsersDB
+participant "JWT Utils" as JWT
+participant "File Watchers" as Watchers
+participant "WebSocket Server" as WS
+
+== System Initialization ==
+
+Server -> Watchers : Initialize File Watchers
+activate Watchers
+Watchers -> Watchers : Setup Chokidar\nfor each user path
+Watchers -> WS : Register watcher events
+deactivate Watchers
+
+Server -> WS : Initialize WebSocket Server
+activate WS
+WS -> WS : Start on port 3000
+WS -> WS : Setup connection handlers
+deactivate WS
+
+Server -> Server : Load config.json
+Server -> Server : Setup Express middleware
+Server -> Server : Register API routes
+Server -> Server : Start HTTP server\n(Port 3000)
+
+note over Server
+  **Server Ready:**
+  - HTTP: Port 3000
+  - WebSocket: Port 3000
+  - File watchers active
+  - Routes registered
+end note
+
+== User Login Flow ==
+
+User -> Browser : Navigate to /\n(Login Page)
+Browser -> Server : GET /
+Server -> Browser : Serve login.html
+
+User -> Browser : Enter credentials\n(username, password)
+Browser -> Server : POST /api/login\n{username, password}
+
+Server -> Auth : authenticateUser(username, password)
+activate Auth
+Auth -> UsersDB : Read users.json
+activate UsersDB
+UsersDB -> Auth : Return user data
+deactivate UsersDB
+
+Auth -> Auth : bcrypt.compare(password, hash)
+alt Password Valid
+  Auth -> Session : Create session\nSet session.userId
+  activate Session
+  Session -> Session : Store session data\nSet expiry (7-30 days)
+  deactivate Session
+  
+  Auth -> JWT : generateToken(user)
+  activate JWT
+  JWT -> JWT : Create access token\n(expires in 1h)
+  JWT -> JWT : Create refresh token\n(expires in 7d)
+  JWT -> Auth : Return tokens
+  deactivate JWT
+  
+  Auth -> Server : Return success\n{user, token, refreshToken}
+  deactivate Auth
+  
+  Server -> Browser : 200 OK\n{success, user, token}
+  Browser -> Browser : Store token\nRedirect to /dashboard
+  Browser -> Server : GET /dashboard\n(Cookie: session)
+  
+  Server -> Auth : requireAuth middleware
+  activate Auth
+  Auth -> Session : Check session.userId
+  activate Session
+  Session -> Auth : Return userId
+  deactivate Session
+  Auth -> UsersDB : getUserById(userId)
+  activate UsersDB
+  UsersDB -> Auth : Return user data
+  deactivate UsersDB
+  Auth -> Server : Set req.user
+  deactivate Auth
+  
+  Server -> Browser : Serve dashboard.html
+  Browser -> Server : GET /api/config
+  Server -> Browser : Return app config
+  Browser -> Browser : Render dashboard\nwith user apps
+  
+else Password Invalid
+  Auth -> Server : Return error\n"Invalid credentials"
+  deactivate Auth
+  Server -> Browser : 401 Unauthorized\n{error: "Invalid credentials"}
+  Browser -> Browser : Show error message
+end
+
+note over User,Browser
+  **Login Success:**
+  - Session created
+  - JWT tokens issued
+  - User redirected to dashboard
+  - Role-based access enforced
+end note
+
+@enduml
+
 

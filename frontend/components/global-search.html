@@ -1,21 +1,62 @@
-<!-- Global Search Component -->
-<div class="global-search-container">
-    <div style="position: relative;">
-        <i class="fas fa-search global-search-icon"></i>
-        <input 
-            type="text" 
-            id="global-search" 
-            class="global-search-input" 
-            placeholder="Search files, images, folders..."
-            autocomplete="off"
-        >
+<!-- Global Search Overlay -->
+<div id="searchOverlay" class="search-overlay">
+    <div class="search-container">
+        <div class="search-header">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="globalSearchInput" placeholder="Search apps, files, or commands... (Ctrl + K)" autocomplete="off">
+            <button id="closeSearch" class="close-search-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="search-content">
+            <!-- Initial State / Recent History -->
+            <div id="searchInitialState" class="search-section">
+                <div class="section-title">Recent Searches</div>
+                <div class="search-history-list" id="searchHistoryList">
+                    <!-- Populated via JS -->
+                    <div class="empty-message">No recent searches</div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 1.5rem;">Quick Actions</div>
+                <div class="quick-actions-grid">
+                    <div class="quick-action-card" onclick="window.location.href='/apps/daily-plan.html'">
+                        <i class="fas fa-calendar-alt" style="color: #60a5fa;"></i>
+                        <span>Daily Plan</span>
+                    </div>
+                    <div class="quick-action-card" onclick="window.location.href='/apps/gallery.html'">
+                        <i class="fas fa-images" style="color: #a78bfa;"></i>
+                        <span>Gallery</span>
+                    </div>
+                    <div class="quick-action-card" onclick="window.location.href='/apps/dashboard.html'">
+                        <i class="fas fa-chart-line" style="color: #34d399;"></i>
+                        <span>KPIs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div id="searchResults" class="search-results" style="display: none;">
+                <!-- Populated via JS -->
+            </div>
+            
+            <!-- Loading State -->
+            <div id="searchLoading" class="search-loading" style="display: none;">
+                <div class="spinner"></div>
+                <span>Searching...</span>
+            </div>
+        </div>
+        
+        <div class="search-footer">
+            <div class="shortcut-hint">
+                <kbd>↑</kbd> <kbd>↓</kbd> to navigate
+            </div>
+            <div class="shortcut-hint">
+                <kbd>Enter</kbd> to select
+            </div>
+            <div class="shortcut-hint">
+                <kbd>Esc</kbd> to close
+            </div>
+        </div>
     </div>
 </div>
-
-<link rel="stylesheet" href="/styles/search.css">
-<script src="/scripts/search-system.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        searchSystem.initialize();
-    });
-</script>
